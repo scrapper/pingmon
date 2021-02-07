@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="refresh" content="30">
+    <title>PingMon - <%= current_group.name %></title>
+    <style>
+      body {
+	text-align: center;
+      }
+      div.graph {
+	display: inline-block;
+        padding: 5px;
+      }
+      <%= DropdownMenu.css %>
+    </style>
+  </head>
+  <body>
+    <div>
+      <%= @group_menu.to_html(args) %>
+      <%= @duration_menu.to_html(args) %>
+    </div>
+    <% current_group.hosts.each do |host| %>
+      <div class="graph">
+        <img src="<%= app_url(%w(chart),
+                              { 'host' => host.name,
+                                'duration' => current_duration })%>"/>
+      </div>
+    <% end %>
+  </body>
+</html>
+

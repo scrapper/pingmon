@@ -6,15 +6,44 @@ module PingMon
 
   class HTTPServer
 
+    class Response < Struct.new(:code, :body, :content_type)
+    end
+
+    class Route < Struct.new(:type, :path, :object, :method)
+    end
+
+    @@RESPONSE_MESSAGES = {
+      200 => 'OK',
+      400 => 'Bad Request',
+      403 => 'Forbidden',
+      404 => 'Not Found',
+      405 => 'Method Not Allowed',
+      406 => 'Not Acceptable',
+      408 => 'Request Timeout',
+      413 => 'Request Entity Too Large',
+      500 => 'Internal Server Error'
+    }
+
     attr_reader :port
 
     def initialize(hostname, port)
       @hostname = hostname
       @port = port
       @terminate = false
+
+      @routes = []
     end
 
-    def run(initiator)
+    def add_route(type, path, object, method)
+      unless [ :get, :post ].include?(type)
+        raise ArgumentError, "type must be either :get or :post"
+      end
+
+      @routes.delete_if { |r| r.type == type && r.path == path }
+      @routes << Route.new(type, path, object, method)
+    end
+
+    def run
       @server = TCPServer.new(@hostname, @port)
       # If requested port is 0, we have to determine the actual port.
       @port = @server.addr[1] if @port == 0
@@ -24,16 +53,16 @@ module PingMon
           session = @server.accept
           request = read_request(session)
           if request[:status] >= 400
-            send_response(session, request[:status], request[:message])
+            send_response(session, request[:status])
             next
           end
 
           if request[:method] == 'POST'
-            initiator.process_post_request(session, request)
+            process_post_request(session, request)
           elsif request[:method] == 'GET'
-            initiator.process_get_request(session, request)
+            process_get_request(session, request)
           else
-            send_response(session, 405, 'Method Not Allowed')
+            send_response(session, 405)
           end
 
           session.close
@@ -51,8 +80,9 @@ module PingMon
       @terminate = true
     end
 
-    def send_response(session, code, message, body = '',
-                      content_type = 'text/plain')
+    def send_response(session, code, body = '', content_type = 'text/plain')
+      message = @@RESPONSE_MESSAGES[code] || 'Internal Server Error'
+
       response = "HTTP/1.1 #{code} #{message}\r\n" +
         "Content-Type: #{content_type}\r\n"
       unless body.empty?
@@ -141,6 +171,24 @@ module PingMon
         headers: headers,
         body: body
       }
+    end
+
+    def process_get_request(session, request)
+      uri = URI("http://#{request[:headers]['host'] || 'localhost'}" +
+                "#{request[:path]}")
+
+      parameter = (query = uri.query) ? CGI.parse(query) : {}
+
+      path = uri.path.split('/')
+      path.shift
+
+      if (route = @routes.find { |r| r.type == :get && r.path == path })
+        response = route.object.send(route.method, parameter)
+        send_response(session, response.code, response.body,
+                      response.content_type)
+      else
+        send_response(session, 404, "Path not found: #{uri.path}")
+      end
     end
 
   end
