@@ -96,7 +96,7 @@ module PingMon
       if args['duration']
         duration = args['duration'].first.to_i
         unless GraphPage::DURATIONS.find { |d| d.value == duration }
-          $stderr.puts "Unknown duration #{duration}"
+          $stderr.puts "Unsupported duration #{duration}"
           duration = GraphPage::DURATIONS.first.value
         end
       end

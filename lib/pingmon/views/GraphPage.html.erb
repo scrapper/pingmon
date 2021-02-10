@@ -6,17 +6,30 @@
     <title>PingMon - <%= current_group.name %></title>
     <style>
       body {
-	text-align: center;
+        text-align: center;
+        background-color: #dddddd;
       }
       div.graph {
 	display: inline-block;
         padding: 5px;
       }
+      div.menu_bar {
+        background-color: #555555;
+        margin: 10px;
+      }
+      div.pingmon_logo {
+        color: #f0f0f0;
+        display: inline;
+        font-size: 24px;
+	font-weight: bold;
+	padding-right: 500px;	
+      }
       <%= DropdownMenu.css %>
     </style>
   </head>
   <body>
-    <div>
+    <div class="menu_bar">
+      <div class ="pingmon_logo">PingMon v.<%= VERSION %></div>
       <%= @group_menu.to_html(args) %>
       <%= @duration_menu.to_html(args) %>
     </div>

@@ -43,10 +43,10 @@ rrdtool graph - \
 --start -#{duration} --end now \
 --font DEFAULT:7: \
 --font TITLE:9: \
---title \"#{host_name}\" \
---watermark \"#{Time.now}\" \
---vertical-label 'latency (ms)' \
---right-axis-label 'latency (ms)' \
+--title '#{host_name}' \
+--watermark '#{Time.now}' \
+--vertical-label 'Latency (ms)' \
+--right-axis-label 'Latency (ms)' \
 --lower-limit 0 \
 --right-axis 1:0 \
 --alt-y-grid --rigid \
@@ -57,12 +57,12 @@ CDEF:PL20=packetloss,1,20,LIMIT,UN,UNKN,INF,IF \
 CDEF:PL40=packetloss,20,40,LIMIT,UN,UNKN,INF,IF \
 CDEF:PL60=packetloss,40,60,LIMIT,UN,UNKN,INF,IF \
 CDEF:PL100=packetloss,60,100,LIMIT,UN,UNKN,INF,IF \
-LINE1:roundtrip#0000FF:'latency (ms)' \
+LINE1:roundtrip#0000FF:'Latency (ms)' \
 GPRINT:roundtrip:LAST:'Cur\\: %5.2lf' \
 GPRINT:roundtrip:MIN:'Min\\: %5.2lf' \
 GPRINT:roundtrip:AVERAGE:'Avg\\: %5.2lf' \
 GPRINT:roundtrip:MAX:'Max\\: %5.2lf\t\t\t' \
-COMMENT:'pkt loss\\:' \
+COMMENT:'Packet loss\\:' \
 AREA:PLNone#FFFFFF:'0%':STACK \
 AREA:PL20#FFFF00:'1-20%':STACK \
 AREA:PL40#FFCC00:'20-40%':STACK \
