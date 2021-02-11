@@ -1,3 +1,14 @@
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
+#
+# = PingMon - A latency monitor
+#
+# Copyright (c) 2021 by Chris Schlaeger <cs@taskjuggler.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
 require 'uri'
 require 'timers'
 
@@ -34,9 +45,9 @@ module PingMon
       end
 
       threads << Thread.new do
-        @http_server = HTTPServer.new('vm1.infra', 3333)
-        @http_server.add_route(:get, %w(pingmon), self, :pingmon)
-        @http_server.add_route(:get, %w(chart), self, :chart)
+        @http_server = HTTPServer.new(@config['hostname'], @config['port'])
+        @http_server.add_route('GET', %w(pingmon), self, :pingmon)
+        @http_server.add_route('GET', %w(chart), self, :chart)
         @http_server.run
       end
 
