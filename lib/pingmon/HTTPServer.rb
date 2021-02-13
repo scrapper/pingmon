@@ -38,8 +38,8 @@ module PingMon
 
       attr_reader :code, :path, :method, :version, :headers, :body
 
-      def initialize(code = 200, path = '', method = '', version = '1.0',
-                     headers = {}, body = '')
+      def initialize(path = '', method = '', version = '1.0', headers = {},
+                     body = '')
         @path = path
         @method = method
         @version = version
@@ -64,7 +64,18 @@ module PingMon
     class Route < Struct.new(:type, :path, :object, :method)
     end
 
-    attr_reader :port
+    class Statistics
+
+      attr_reader :requests, :errors
+
+      def initialize
+        @requests = Hash.new { |k, v| k[v] = 0 }
+        @errors = Hash.new { |k, v| k[v] = 0 }
+      end
+
+    end
+
+    attr_reader :port, :statistics
 
     def initialize(hostname = 'localhost', port = 0)
       @hostname = hostname
@@ -72,6 +83,7 @@ module PingMon
       @terminate = false
 
       @routes = {}
+      @statistics = Statistics.new
     end
 
     # Register a given method of a given object to be called whenever a
@@ -118,7 +130,7 @@ module PingMon
           $stderr.puts "Aborting on user request..."
           stop
         rescue IOError => e
-          $stderr.puts "HTTPServer IOError: #{e.message}"
+          $stderr.puts "HTTPServer #{e.class}: #{e.message}"
         end
       end
     end
@@ -148,18 +160,18 @@ module PingMon
 
     def read_request
       # Read the first part of the request. It may be the only part.
-      request = @session.readpartial(2048)
+      request = read_with_timeout(2048, 0.01)
 
       # It must not be empty.
-      if (lines = request.lines).empty?
-        return Response.new(400, 'Request is empty')
+      if request.empty? || (lines = request.lines).length < 3
+        return error(400, 'Request is empty')
       end
 
       method, path, version = request.lines[0].split
       # Ensure that the request type is supported.
       unless method && REQUEST_TYPES.include?(method)
-        return Response.new(405, "Only the following request methods are " +
-                            "allowed: #{REQUEST_TYPES.join(' ')}")
+        return error(405, "Only the following request methods are " +
+                     "allowed: #{REQUEST_TYPES.join(' ')}")
       end
 
       headers = {}
@@ -192,28 +204,51 @@ module PingMon
         content_length = headers['content-length'].to_i
         # We only support 65k long requests to prevent DOS attacks.
         if content_length > MAX_CONTENT_LENGTH
-          return Response.new(413, "Content length must be smaller than " +
-                             "#{MAX_CONTENT_LENGTH}")
+          return error(413, "Content length must be smaller than " +
+                       "#{MAX_CONTENT_LENGTH}")
         end
 
-        # We must receive the full requests within 5 seconds.
-        timeout = Time.now + 5.0
-        while Time.now < timeout && body.bytesize < content_length
-          body += @session.readpartial(2048)
-        end
+        body += read_with_timeout(content_length - body.bytesize, 5)
       end
       body.chomp!
 
       # The request is only valid if the body length matches the content
       # length specified in the header.
       if body.bytesize != content_length
-        return Response.new(408, "Request timeout. Body length " +
-                            "(#{body.bytesize}) does not " +
-                            "match specified content length (#{content_type})")
+        return error(408, "Request timeout. Body length " +
+                     "(#{body.bytesize}) does not " +
+                     "match specified content length (#{content_length})")
       end
 
+      @statistics.requests[method] += 1
+
       # Return the full request.
-      Request.new(200, path, method, version, headers, body)
+      Request.new(path, method, version, headers, body)
+    end
+
+    def read_with_timeout(maxbytes, timeout_secs)
+      str = ''
+
+      deadline = Time.now - timeout_secs
+      fds = [ @session ]
+      while maxbytes > 0 && timeout_secs > 0.0
+        if IO.select(fds, [], [], timeout_secs)
+          # We only have one socket that we are listening on. If select()
+          # fires with a true result, we have something to read from @session.
+          begin
+            s = @session.readpartial(maxbytes)
+          rescue EOFError
+            break
+          end
+          maxbytes -= s.bytesize
+          str += s
+          timeout_secs = deadline - Time.now
+        else
+          break
+        end
+      end
+
+      str
     end
 
     def process_request(request)
@@ -230,8 +265,13 @@ module PingMon
         return Response.new(response.code, response.body,
                             response.content_type)
       else
-        return Response.new(404, "Path not found: #{uri.path}")
+        return error(404, "Path not found: #{uri.path}")
       end
+    end
+
+    def error(code, message)
+      @statistics.errors[code] += 1
+      Response.new(code, message)
     end
 
   end
