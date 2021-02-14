@@ -16,7 +16,9 @@ your $PATH environment variable.
 
 To start off, create a directory .pingmon in your home directory.
 
- mkdir -p ${HOME}/.pingmon
+```
+mkdir -p ${HOME}/.pingmon
+```
 
 In this directory, create a file that looks like the following. The file
 must be named config.json. You can use the following content as a
@@ -25,47 +27,51 @@ every 15 seconds. Optionally, you can use an intervall of 300 seconds
 (5 minutes) which is recommended for all remote hosts. Other intervals
 are not supported.
 
- {
-   "hostname" : "your.host",
-   "port" : 3333,
-   "host_groups" : [
-     {
-       "name" : "Networking Gear",
-       "hosts" : [
-         {
-           "name" : "firewall"
-         },
-         {
-           "name" : "accesspoint"
-         },
-         {
-           "name" : "switch"
-         }
-       ]
-     },
-     {
-       "name" : "Remote Servers",
-       "hosts" : [
-         {
-           "name" : "my.web.server.com"
-	   "ping_inverval_secs" : 300
-         },
-         {
-           "name" : "my.mail.server.com"
-	   "ping_inverval_secs" : 300
-         },
-         {
-           "name" : "my.vm.server.com"
-	   "ping_inverval_secs" : 300
-         }
-       ]
-     }
-   ]
- }
+```json
+{
+  "hostname" : "your.host",
+  "port" : 3333,
+  "host_groups" : [
+    {
+      "name" : "Networking Gear",
+      "hosts" : [
+        {
+          "name" : "firewall"
+        },
+        {
+          "name" : "accesspoint"
+        },
+        {
+          "name" : "switch"
+        }
+      ]
+    },
+    {
+      "name" : "Remote Servers",
+      "hosts" : [
+        {
+          "name" : "my.web.server.com"
+          "ping_inverval_secs" : 300
+        },
+        {
+          "name" : "my.mail.server.com"
+          "ping_inverval_secs" : 300
+        },
+        {
+          "name" : "my.vm.server.com"
+          "ping_inverval_secs" : 300
+        }
+      ]
+    }
+  ]
+}
+```
 
 Next, you need to create the following directory.
 
- mkdir -p ${HOME}/.config/systemd/user
+```
+mkdir -p ${HOME}/.config/systemd/user
+```
 
 In this directory, create a file called pingmon.service. You can use
 the following template, but you must adapt it to your configuration.
@@ -73,28 +79,34 @@ The network-online.target is only needed if you mount your home
 directory via NFS. Replace <your_login> and the path to pingmon with
 your local settings.
 
- [Unit]
- Description=Ping latency monitoring service
- After=network-online.target home-<your_login>.mount
- Requires=home-<your_login>.mount
- 
- [Service]
- Type=simple
- ExecStart=/path/to/bin/pingmon
- 
- [Install]
- WantedBy=default.target
+```
+[Unit]
+Description=Ping latency monitoring service
+After=network-online.target home-<your_login>.mount
+Requires=home-<your_login>.mount
+
+[Service]
+Type=simple
+ExecStart=/path/to/bin/pingmon
+
+[Install]
+WantedBy=default.target
+```
 
 ## Usage
 
 Now you can start the daemon via systemd.
 
- systemctl --user enable pingmon
- systemctl --user start pingmon
+```
+systemctl --user enable pingmon
+systemctl --user start pingmon
+```
 
 Use the following command to check if pingmon is running properly.
 
- systemctl --user status pingmon
+```
+systemctl --user status pingmon
+```
 
 If all is going well, you should not be seing any error messages and
 every few calls to systemctl status should show the forked-off ping
