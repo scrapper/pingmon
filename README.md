@@ -50,15 +50,15 @@ are not supported.
       "name" : "Remote Servers",
       "hosts" : [
         {
-          "name" : "my.web.server.com"
+          "name" : "my.web.server.com",
           "ping_inverval_secs" : 300
         },
         {
-          "name" : "my.mail.server.com"
+          "name" : "my.mail.server.com",
           "ping_inverval_secs" : 300
         },
         {
-          "name" : "my.vm.server.com"
+          "name" : "my.vm.server.com",
           "ping_inverval_secs" : 300
         }
       ]
