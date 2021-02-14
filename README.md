@@ -117,7 +117,7 @@ view your latency and packet loss statistics.
 
 ## Copyright and License
 
-Copyright (c) 2021 by Chris Schlaeger <chris@taskjuggler.org>
+Copyright (c) 2021 by Chris Schlaeger <cs@taskjuggler.org>
 
 PEROBS and all accompanying files are licensed under GNU GPL v2
 License. See COPYING file for details.
