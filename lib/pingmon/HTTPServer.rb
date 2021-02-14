@@ -18,7 +18,7 @@ module PingMon
   class HTTPServer
 
     # Supported HTTP request types.
-    REQUEST_TYPES = %w( GET PUT POST )
+    REQUEST_TYPES = %w( GET POST )
 
     MAX_CONTENT_LENGTH = 2 ** 16
 
@@ -252,6 +252,8 @@ module PingMon
     end
 
     def process_request(request)
+      # Construct a dummy URI so we can use the URI class to parse the request
+      # and extract the path and parameters.
       uri = URI("http://#{request.headers['host'] || 'localhost'}" +
                 "#{request.path}")
 
