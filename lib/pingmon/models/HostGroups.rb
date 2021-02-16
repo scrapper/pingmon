@@ -38,6 +38,12 @@ module PingMon
       @groups.each { |g| g.hosts.each { |h| yield(h) } }
     end
 
+    def host_by_name(name)
+      @groups.each { |g| g.hosts.each { |h| return h if h.name == name } }
+
+      nil
+    end
+
     private
 
     def check_host_dbs

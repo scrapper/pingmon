@@ -39,7 +39,8 @@ are not supported.
           "name" : "firewall"
         },
         {
-          "name" : "accesspoint"
+          "name" : "accesspoint",
+	  "alias" : "WiFi AP"
         },
         {
           "name" : "switch"
@@ -55,6 +56,7 @@ are not supported.
         },
         {
           "name" : "my.mail.server.com",
+	  "alias" : "My other server",
           "ping_inverval_secs" : 300
         },
         {

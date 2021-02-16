@@ -97,10 +97,10 @@ module PingMon
       unless args.include?('host')
         return HTTPServer::Response.new(406, 'Paramater "host" is missing')
       end
-      host = args['host'].first
-      unless @host_groups.known_hosts.include?(host)
-        $stderr.puts "Unknown host #{host}"
-        return HTTPServer::Response.new(406, "Unknown host #{host}")
+      host_name = args['host'].first
+      unless (host = @host_groups.host_by_name(host_name))
+        $stderr.puts "Unknown host #{host_name}"
+        return HTTPServer::Response.new(406, "Unknown host #{host_name}")
       end
 
       duration = GraphPage::DURATIONS.first.value
@@ -112,7 +112,7 @@ module PingMon
         end
       end
 
-      body = @rrd.graph(host, duration)
+      body = @rrd.graph(host.name, host.common_name, duration)
       HTTPServer::Response.new(200, body, 'image/png')
     end
 

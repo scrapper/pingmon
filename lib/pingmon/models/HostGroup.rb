@@ -22,7 +22,9 @@ module PingMon
       @hosts = []
 
       hosts.each do |host|
-        @hosts << Host.new(host['name'], host['ping_interval_secs'] || 15)
+        @hosts << Host.new(host['name'],
+                           host['alias'] || nil,
+                           host['ping_interval_secs'] || 15)
       end
     end
 

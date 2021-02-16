@@ -45,7 +45,7 @@ EOT
              "#{packet_loss}:#{round_trip_time}")
     end
 
-    def graph(host_name, duration)
+    def graph(host_name, common_name, duration)
       db = rrd_file(host_name)
       cmd = <<"EOT"
 rrdtool graph - \
@@ -54,7 +54,7 @@ rrdtool graph - \
 --start -#{duration} --end now \
 --font DEFAULT:7: \
 --font TITLE:9: \
---title '#{host_name}' \
+--title '#{common_name ? "#{common_name} (#{host_name})" : host_name}' \
 --watermark '#{Time.now}' \
 --vertical-label 'Latency (ms)' \
 --right-axis-label 'Latency (ms)' \

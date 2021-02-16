@@ -13,10 +13,11 @@ module PingMon
 
   class Host
 
-    attr_reader :name, :ping_interval_secs
+    attr_reader :name, :common_name, :ping_interval_secs
 
-    def initialize(name, ping_interval_secs)
+    def initialize(name, common_name, ping_interval_secs)
       @name = name
+      @common_name = common_name
       @ping_interval_secs = ping_interval_secs
     end
 
