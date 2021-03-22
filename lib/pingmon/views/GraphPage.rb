@@ -1,7 +1,7 @@
 require 'erb'
 
 require 'pingmon/models/HostGroups'
-require 'pingmon/controllers/DropdownMenu'
+require 'pingmon/controllers/DropdownButton'
 
 module PingMon
 
@@ -21,12 +21,12 @@ module PingMon
     def initialize(host_groups)
       @host_groups = host_groups
 
-      @group_menu = DropdownMenu.new('Host Groups', 'pingmon', 'group')
+      @group_menu = DropdownButton.new('Host Groups', 'pingmon', 'group')
       host_groups.groups.each do |group|
         @group_menu.add_item(group.name)
       end
 
-      @duration_menu = DropdownMenu.new('Duration', 'pingmon', 'duration')
+      @duration_menu = DropdownButton.new('Duration', 'pingmon', 'duration')
       DURATIONS.each do |item|
         @duration_menu.add_item(item.name, item.value.to_s)
       end
@@ -42,15 +42,16 @@ module PingMon
         current_group = @host_groups.groups.find { |g| g.name == group_name } ||
           @host_groups.groups.first
       end
+      @group_menu.select(current_group.name)
 
       unless (d = args['duration']) && (duration = d.first)
-        current_duration = DURATIONS.first.value
+        current_duration = DURATIONS.first
       else
-        current_duration = (
-          DURATIONS.find { |d| d.value == duration.to_i } ||
-          DURATIONS.first
-        ).value
+        current_duration =
+          DURATIONS.find { |d| d.value == duration.to_i } || DURATIONS.first
       end
+      @duration_menu.select(current_duration.name)
+
       ERB.new(template).result(binding)
     end
 

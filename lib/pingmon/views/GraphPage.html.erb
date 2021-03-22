@@ -46,7 +46,7 @@
       <div class="graph">
         <img src="<%= app_url(%w(chart),
                               { 'host' => host.name,
-                                'duration' => current_duration })%>"/>
+                                'duration' => current_duration.value })%>"/>
       </div>
     <% end %>
   </body>
